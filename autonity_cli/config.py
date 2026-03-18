@@ -23,6 +23,48 @@ KEYFILE_PASSWORD_ENV_VAR = "KEYFILEPWD"
 WEB3_ENDPOINT_ENV_VAR = "WEB3_ENDPOINT"
 CONTRACT_ADDRESS_ENV_VAR = "CONTRACT_ADDRESS"
 CONTRACT_ABI_ENV_VAR = "CONTRACT_ABI"
+AUTH_TOKEN_ENV_VAR = "AUT_AUTH_TOKEN"
+
+_auth_token_cli: Optional[str] = None
+
+
+def set_auth_token_from_cli(token: Optional[str]) -> None:
+    """Set the auth token from the CLI --auth-token option."""
+    global _auth_token_cli
+    _auth_token_cli = token
+
+
+def _normalize_token(token: Optional[str]) -> Optional[str]:
+    """Strip whitespace; treat empty/whitespace-only as absent."""
+    if token is None:
+        return None
+    token = token.strip()
+    return token if token else None
+
+
+def get_auth_token() -> Optional[str]:
+    """
+    Get the auth token with CLI > env > config file precedence.
+    Returns None if no token is configured (backward compatible).
+    Empty or whitespace-only values at any level are treated as
+    absent, allowing fallthrough to the next source.
+    """
+    token = _normalize_token(_auth_token_cli)
+    if token is not None:
+        log("auth token configured (source: cli)")
+        return token
+
+    token = _normalize_token(os.getenv(AUTH_TOKEN_ENV_VAR))
+    if token is not None:
+        log("auth token configured (source: env)")
+        return token
+
+    token = _normalize_token(get_config_file().get("auth_token"))
+    if token is not None:
+        log("auth token configured (source: file)")
+        return token
+
+    return None
 
 
 def get_keystore_directory(keystore_directory: Optional[str]) -> str:

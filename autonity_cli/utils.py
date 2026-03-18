@@ -31,6 +31,7 @@ from web3.types import (
 
 from . import config
 from .constants import COMMISSION_RATE_PRECISION, AutonDenoms
+from .logging import log
 from .denominations import NEWTON_DECIMALS
 from .keyfile import load_keyfile
 from .tx import (
@@ -77,13 +78,34 @@ def web3_provider_for_endpoint(endpoint: str) -> BaseProvider:
     Given an rpc endpoint, return an appropriate provider (https, ws,
     or IPC). If identifier isn't a valid format of one of these three
     types, throws an exception.
+
+    If an auth token is configured, injects a Bearer Authorization
+    header for HTTP providers. WebSocket and IPC providers do not
+    support custom headers.
     """
+    auth_token = config.get_auth_token()
+
     regex_http = re.compile(r"^(?:http)s?://")
     if re.match(regex_http, endpoint) is not None:
+        if auth_token is not None:
+            if endpoint.startswith("http://"):
+                log(
+                    "WARNING: sending auth token over plain HTTP. "
+                    "Consider using HTTPS for production endpoints."
+                )
+            return HTTPProvider(
+                endpoint,
+                request_kwargs={"headers": {"Authorization": f"Bearer {auth_token}"}},
+            )
         return HTTPProvider(endpoint)
 
     regex_ws = re.compile(r"^(?:ws)s?://")
     if re.match(regex_ws, endpoint) is not None:
+        if auth_token is not None:
+            log(
+                "WARNING: auth_token is set but WebSocket provider does not "
+                "support custom headers. Token will not be sent."
+            )
         return LegacyWebSocketProvider(endpoint)
 
     regex_ipc = re.compile("([^ !$`&*()+]|(\\[ !$`&*()+]))+\\.ipc")
