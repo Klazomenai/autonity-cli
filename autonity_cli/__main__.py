@@ -11,6 +11,7 @@ from click import group, option, version_option
 from . import config
 from .commands import (
     account,
+    auth,
     block,
     contract,
     governance,
@@ -49,6 +50,7 @@ def aut(verbose: bool, auth_token: Optional[str]) -> None:
         sys.tracebacklimit = 0
 
 
+aut.add_command(auth.auth_group)
 aut.add_command(node.node_group)
 aut.add_command(block.block_group)
 aut.add_command(tx.tx_group)
