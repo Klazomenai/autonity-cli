@@ -109,6 +109,33 @@ def _find_config_file() -> str | None:
     return None
 
 
+def remove_config_value(key: str) -> str | None:
+    """
+    Remove a key from the [aut] section of the config file.
+    Returns path of modified file, or None if no file found or key absent.
+    Invalidates the config cache after write.
+    """
+
+    global config_file_cached
+
+    config_path = _find_config_file()
+    if config_path is None:
+        return None
+
+    parser = ConfigParser()
+    parser.read(config_path, encoding="utf-8")
+
+    if not parser.has_option(CONFIG_FILE_SECTION_NAME, key):
+        return None
+
+    parser.remove_option(CONFIG_FILE_SECTION_NAME, key)
+    with open(config_path, "w", encoding="utf-8") as f:
+        parser.write(f)
+
+    config_file_cached = False
+    return config_path
+
+
 def get_config_file() -> ConfigFile:
     """
     Load (and cache in memory) the first config file found.  If no
@@ -123,7 +150,7 @@ def get_config_file() -> ConfigFile:
         config_file_path = _find_config_file()
         if config_file_path:
             config = ConfigParser()
-            config.read(config_file_path)
+            config.read(config_file_path, encoding="utf-8")
             config_file_dir = os.path.dirname(config_file_path)
             config_file_data = ConfigFile(config[CONFIG_FILE_SECTION_NAME])
 

@@ -24,6 +24,7 @@ dependencies = [
   "autonity{env:AUTPY_VERSION:==6.0.0}",
   "click>=8.1.8",
   "click-option-group",
+  "PyJWT>=2.0.0",
   "trezor[ethereum]>=0.13.10",
 ]
 
