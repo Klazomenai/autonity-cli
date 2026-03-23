@@ -63,6 +63,10 @@ def login(keyfile: Optional[str], trezor: Optional[str], auth_service: Optional[
             raise ClickException(
                 f"challenge failed: {status} {body}"
             ) from exc
+        except requests.RequestException as exc:
+            raise ClickException(
+                f"challenge request failed: {exc}"
+            ) from exc
 
         try:
             challenge = resp.json()
@@ -98,6 +102,10 @@ def login(keyfile: Optional[str], trezor: Optional[str], auth_service: Optional[
             body = r.text if r is not None else ""
             raise ClickException(
                 f"authentication failed: {status} {body}"
+            ) from exc
+        except requests.RequestException as exc:
+            raise ClickException(
+                f"token request failed: {exc}"
             ) from exc
 
         try:
