@@ -167,7 +167,12 @@ def set_config_value(key: str, value: str) -> str:
     else:
         # Create with restrictive permissions (0600) — config may contain tokens.
         fd = os.open(config_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
+        try:
+            f = os.fdopen(fd, "w", encoding="utf-8")
+        except Exception:
+            os.close(fd)
+            raise
+        with f:
             parser.write(f)
 
     config_file_cached = False

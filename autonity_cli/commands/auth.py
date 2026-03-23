@@ -70,10 +70,14 @@ def login(keyfile: Optional[str], trezor: Optional[str], auth_service: Optional[
 
         try:
             challenge = resp.json()
-            message = challenge.get("message")
-        except (ValueError, AttributeError):
+        except ValueError:
             raise ClickException("invalid response from auth service (not JSON)")
-        if not message:
+
+        if not isinstance(challenge, dict):
+            raise ClickException("invalid challenge response from auth service")
+
+        message = challenge.get("message")
+        if not isinstance(message, str) or not message:
             raise ClickException("challenge response missing 'message' field")
 
         # 2. Sign the SIWE message
@@ -110,10 +114,14 @@ def login(keyfile: Optional[str], trezor: Optional[str], auth_service: Optional[
 
         try:
             token_data = resp.json()
-            token = token_data.get("token")
-        except (ValueError, AttributeError):
+        except ValueError:
             raise ClickException("invalid response from auth service (not JSON)")
-        if not token:
+
+        if not isinstance(token_data, dict):
+            raise ClickException("invalid token response from auth service")
+
+        token = token_data.get("token")
+        if not isinstance(token, str) or not token:
             raise ClickException("token response missing 'token' field")
 
         # 4. Store token in config file

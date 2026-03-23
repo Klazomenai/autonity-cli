@@ -10,6 +10,7 @@ import jwt
 import pytest
 import requests
 import responses
+from click import ClickException
 from click.testing import CliRunner
 from eth_account import Account
 
@@ -79,7 +80,7 @@ class TestGetAuthService:
         assert result == "https://file.example.com"
 
     def test_raises_when_none_configured(self) -> None:
-        with pytest.raises(Exception, match="no auth service configured"):
+        with pytest.raises(ClickException, match="no auth service configured"):
             config.get_auth_service()
 
     def test_cli_overrides_env(self) -> None:
