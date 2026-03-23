@@ -24,6 +24,7 @@ WEB3_ENDPOINT_ENV_VAR = "WEB3_ENDPOINT"
 CONTRACT_ADDRESS_ENV_VAR = "CONTRACT_ADDRESS"
 CONTRACT_ABI_ENV_VAR = "CONTRACT_ABI"
 AUTH_TOKEN_ENV_VAR = "AUT_AUTH_TOKEN"
+AUTH_SERVICE_ENV_VAR = "AUT_AUTH_SERVICE"
 
 _auth_token_cli: Optional[str] = None
 
@@ -65,6 +66,31 @@ def get_auth_token() -> Optional[str]:
         return token
 
     return None
+
+
+def get_auth_service(cli_param: Optional[str] = None) -> str:
+    """
+    Get the auth service URL with CLI > env > config file precedence.
+    Empty or whitespace-only values at any level are treated as
+    absent, allowing fallthrough to the next source.
+    Raises ClickException if no auth service is configured.
+    """
+    val = _normalize_token(cli_param)
+    if val is not None:
+        return val
+
+    val = _normalize_token(os.getenv(AUTH_SERVICE_ENV_VAR))
+    if val is not None:
+        return val
+
+    val = _normalize_token(get_config_file().get("auth_service"))
+    if val is not None:
+        return val
+
+    raise ClickException(
+        "no auth service configured (use --auth-service, "
+        f"'{AUTH_SERVICE_ENV_VAR}' env var, or 'auth_service' in config file)"
+    )
 
 
 def get_keystore_directory(keystore_directory: Optional[str]) -> str:
