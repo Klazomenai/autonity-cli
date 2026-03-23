@@ -59,7 +59,8 @@ def login(keyfile: Optional[str], trezor: Optional[str], auth_service: Optional[
         except requests.HTTPError as exc:
             r = exc.response
             status = r.status_code if r is not None else "unknown"
-            body = r.text if r is not None else ""
+            # Cap error body at 200 chars to avoid wall-of-text from proxies/HTML pages.
+            body = (r.text[:200] if r is not None else "")
             raise ClickException(
                 f"challenge failed: {status} {body}"
             ) from exc
@@ -103,7 +104,8 @@ def login(keyfile: Optional[str], trezor: Optional[str], auth_service: Optional[
         except requests.HTTPError as exc:
             r = exc.response
             status = r.status_code if r is not None else "unknown"
-            body = r.text if r is not None else ""
+            # Cap error body at 200 chars to avoid wall-of-text from proxies/HTML pages.
+            body = (r.text[:200] if r is not None else "")
             raise ClickException(
                 f"authentication failed: {status} {body}"
             ) from exc
