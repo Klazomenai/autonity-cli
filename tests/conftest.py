@@ -28,6 +28,7 @@ def _reset_module_state(  # pyright: ignore[reportUnusedFunction]
     """Reset module-level state and isolate from host environment."""
     _clear_module_state()
     monkeypatch.delenv(config.AUTH_TOKEN_ENV_VAR, raising=False)
+    monkeypatch.delenv(config.AUTH_SERVICE_ENV_VAR, raising=False)
     monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.chdir(tmp_path)
     yield

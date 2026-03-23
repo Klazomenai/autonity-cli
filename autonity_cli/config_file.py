@@ -136,6 +136,34 @@ def remove_config_value(key: str) -> str | None:
     return config_path
 
 
+def set_config_value(key: str, value: str) -> str:
+    """
+    Set a key in the [aut] section of the config file.
+    Creates .autrc in cwd if no config file exists.
+    Returns path of the written file.
+    Invalidates the config cache after write.
+    """
+
+    global config_file_cached
+
+    config_path = _find_config_file()
+    if config_path is None:
+        config_path = os.path.join(os.getcwd(), CONFIG_FILE_NAME)
+
+    parser = ConfigParser()
+    parser.read(config_path, encoding="utf-8")
+
+    if not parser.has_section(CONFIG_FILE_SECTION_NAME):
+        parser.add_section(CONFIG_FILE_SECTION_NAME)
+
+    parser.set(CONFIG_FILE_SECTION_NAME, key, value)
+    with open(config_path, "w", encoding="utf-8") as f:
+        parser.write(f)
+
+    config_file_cached = False
+    return config_path
+
+
 def get_config_file() -> ConfigFile:
     """
     Load (and cache in memory) the first config file found.  If no

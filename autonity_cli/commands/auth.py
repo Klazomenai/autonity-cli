@@ -1,12 +1,16 @@
 """Commands for managing authentication tokens."""
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
+import click
 import jwt
+import requests
 from click import ClickException, group
 
 from .. import config
-from ..config_file import remove_config_value
+from ..auth import authenticator
+from ..config_file import remove_config_value, set_config_value
+from ..options import authentication_options
 from ..utils import to_json
 
 
@@ -18,11 +22,84 @@ def auth_group() -> None:
 
 
 @auth_group.command()
-def login() -> None:
+@authentication_options()
+@click.option("--auth-service", metavar="URL", default=None, help="KeyRA auth service URL")
+def login(keyfile: Optional[str], trezor: Optional[str], auth_service: Optional[str]) -> None:
     """
     Authenticate via SIWE and store a token.
+
+    Signs a challenge message from the auth service using
+    --keyfile or --trezor, submits the signature, and stores
+    the returned JWT in the config file.
     """
-    raise ClickException("not yet implemented — requires SIWE authentication flow (#5)")
+
+    service_url = config.get_auth_service(auth_service)
+    # Strip trailing slash for consistent URL joining
+    service_url = service_url.rstrip("/")
+
+    with authenticator(keyfile=keyfile, trezor=trezor) as auth:
+        address = str(auth.address)
+
+        # 1. Fetch challenge from auth service
+        try:
+            resp = requests.post(
+                f"{service_url}/auth/challenge",
+                json={"address": address},
+                timeout=30,
+            )
+            resp.raise_for_status()
+        except requests.ConnectionError as exc:
+            raise ClickException(
+                f"cannot reach auth service at {service_url}"
+            ) from exc
+        except requests.Timeout as exc:
+            raise ClickException(
+                f"auth service timed out at {service_url}"
+            ) from exc
+        except requests.HTTPError as exc:
+            raise ClickException(
+                f"challenge failed: {resp.status_code} {resp.text}"
+            ) from exc
+
+        challenge = resp.json()
+        message = challenge.get("message")
+        if not message:
+            raise ClickException("challenge response missing 'message' field")
+
+        # 2. Sign the SIWE message
+        signature = auth.sign_message(message)
+        sig_hex = "0x" + signature.hex()
+
+        # 3. Submit signature, receive token
+        try:
+            resp = requests.post(
+                f"{service_url}/auth/token",
+                json={"message": message, "signature": sig_hex},
+                timeout=30,
+            )
+            resp.raise_for_status()
+        except requests.ConnectionError as exc:
+            raise ClickException(
+                f"cannot reach auth service at {service_url}"
+            ) from exc
+        except requests.Timeout as exc:
+            raise ClickException(
+                f"auth service timed out at {service_url}"
+            ) from exc
+        except requests.HTTPError as exc:
+            raise ClickException(
+                f"authentication failed: {resp.status_code} {resp.text}"
+            ) from exc
+
+        token_data = resp.json()
+        token = token_data.get("token")
+        if not token:
+            raise ClickException("token response missing 'token' field")
+
+        # 4. Store token in config file
+        path = set_config_value("auth_token", token)
+        print(f"logged in as {address}")
+        print(f"token stored in {path}")
 
 
 @auth_group.command()
