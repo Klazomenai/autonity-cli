@@ -71,18 +71,21 @@ def get_auth_token() -> Optional[str]:
 def get_auth_service(cli_param: Optional[str] = None) -> str:
     """
     Get the auth service URL with CLI > env > config file precedence.
+    Empty or whitespace-only values at any level are treated as
+    absent, allowing fallthrough to the next source.
     Raises ClickException if no auth service is configured.
     """
-    if cli_param:
-        return cli_param
+    val = _normalize_token(cli_param)
+    if val is not None:
+        return val
 
-    env_val = os.getenv(AUTH_SERVICE_ENV_VAR)
-    if env_val:
-        return env_val
+    val = _normalize_token(os.getenv(AUTH_SERVICE_ENV_VAR))
+    if val is not None:
+        return val
 
-    file_val = get_config_file().get("auth_service")
-    if file_val:
-        return file_val
+    val = _normalize_token(get_config_file().get("auth_service"))
+    if val is not None:
+        return val
 
     raise ClickException(
         "no auth service configured (use --auth-service, "

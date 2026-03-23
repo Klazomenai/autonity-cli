@@ -150,15 +150,25 @@ def set_config_value(key: str, value: str) -> str:
     if config_path is None:
         config_path = os.path.join(os.getcwd(), CONFIG_FILE_NAME)
 
+    file_exists = os.path.exists(config_path)
+
     parser = ConfigParser()
-    parser.read(config_path, encoding="utf-8")
+    if file_exists:
+        parser.read(config_path, encoding="utf-8")
 
     if not parser.has_section(CONFIG_FILE_SECTION_NAME):
         parser.add_section(CONFIG_FILE_SECTION_NAME)
 
     parser.set(CONFIG_FILE_SECTION_NAME, key, value)
-    with open(config_path, "w", encoding="utf-8") as f:
-        parser.write(f)
+
+    if file_exists:
+        with open(config_path, "w", encoding="utf-8") as f:
+            parser.write(f)
+    else:
+        # Create with restrictive permissions (0600) — config may contain tokens.
+        fd = os.open(config_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            parser.write(f)
 
     config_file_cached = False
     return config_path

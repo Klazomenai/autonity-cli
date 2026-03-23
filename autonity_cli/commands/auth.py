@@ -57,12 +57,18 @@ def login(keyfile: Optional[str], trezor: Optional[str], auth_service: Optional[
                 f"auth service timed out at {service_url}"
             ) from exc
         except requests.HTTPError as exc:
+            r = exc.response
+            status = r.status_code if r is not None else "unknown"
+            body = r.text if r is not None else ""
             raise ClickException(
-                f"challenge failed: {resp.status_code} {resp.text}"
+                f"challenge failed: {status} {body}"
             ) from exc
 
-        challenge = resp.json()
-        message = challenge.get("message")
+        try:
+            challenge = resp.json()
+            message = challenge.get("message")
+        except (ValueError, AttributeError):
+            raise ClickException("invalid response from auth service (not JSON)")
         if not message:
             raise ClickException("challenge response missing 'message' field")
 
@@ -87,12 +93,18 @@ def login(keyfile: Optional[str], trezor: Optional[str], auth_service: Optional[
                 f"auth service timed out at {service_url}"
             ) from exc
         except requests.HTTPError as exc:
+            r = exc.response
+            status = r.status_code if r is not None else "unknown"
+            body = r.text if r is not None else ""
             raise ClickException(
-                f"authentication failed: {resp.status_code} {resp.text}"
+                f"authentication failed: {status} {body}"
             ) from exc
 
-        token_data = resp.json()
-        token = token_data.get("token")
+        try:
+            token_data = resp.json()
+            token = token_data.get("token")
+        except (ValueError, AttributeError):
+            raise ClickException("invalid response from auth service (not JSON)")
         if not token:
             raise ClickException("token response missing 'token' field")
 
