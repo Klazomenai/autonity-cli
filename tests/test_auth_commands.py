@@ -49,7 +49,7 @@ def _mock_token(token: str = "eyJ-test-jwt") -> None:
     """Register a successful token response."""
     responses.post(
         f"{AUTH_SERVICE}/auth/token",
-        json={"token": token, "token_id": "jti-1"},
+        json={"parent_token": token, "parent_jti": "jti-1"},
     )
 
 
@@ -301,17 +301,32 @@ class TestAuthLogin:
         assert "authentication failed: 502" in result.output
 
     @responses.activate
-    def test_login_token_missing_token(
+    def test_login_token_missing_both_fields(
         self, runner: CliRunner, mock_keyfile: Path
     ) -> None:
         _mock_challenge()
         responses.post(
             f"{AUTH_SERVICE}/auth/token",
-            json={"token_id": "jti-1"},  # no "token" field
+            json={"parent_jti": "jti-1"},  # no parent_token or token field
         )
         result = runner.invoke(aut, _login_args(mock_keyfile), input="test-password\n")
         assert result.exit_code != 0
-        assert "missing 'token' field" in result.output
+        assert "missing 'parent_token' or 'token' field" in result.output
+
+    @responses.activate
+    def test_login_legacy_token_field(
+        self, runner: CliRunner, mock_keyfile: Path
+    ) -> None:
+        """Auth service returns legacy {token: ...} instead of {parent_token: ...}."""
+        _mock_challenge()
+        responses.post(
+            f"{AUTH_SERVICE}/auth/token",
+            json={"token": "legacy-jwt-value", "token_id": "jti-1"},
+        )
+        result = runner.invoke(aut, _login_args(mock_keyfile), input="test-password\n")
+        assert result.exit_code == 0
+        content = Path(".autrc").read_text()
+        assert "legacy-jwt-value" in content
 
     # --- Edge cases ---
 
