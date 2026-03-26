@@ -49,7 +49,7 @@ def _mock_token(token: str = "eyJ-test-jwt") -> None:
     """Register a successful token response."""
     responses.post(
         f"{AUTH_SERVICE}/auth/token",
-        json={"token": token, "token_id": "jti-1"},
+        json={"parent_token": token, "parent_jti": "jti-1"},
     )
 
 
@@ -307,11 +307,11 @@ class TestAuthLogin:
         _mock_challenge()
         responses.post(
             f"{AUTH_SERVICE}/auth/token",
-            json={"token_id": "jti-1"},  # no "token" field
+            json={"parent_jti": "jti-1"},  # no "parent_token" field
         )
         result = runner.invoke(aut, _login_args(mock_keyfile), input="test-password\n")
         assert result.exit_code != 0
-        assert "missing 'token' field" in result.output
+        assert "missing 'parent_token' field" in result.output
 
     # --- Edge cases ---
 

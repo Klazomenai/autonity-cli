@@ -122,9 +122,10 @@ def login(keyfile: Optional[str], trezor: Optional[str], auth_service: Optional[
         if not isinstance(token_data, dict):
             raise ClickException("invalid token response from auth service")
 
-        token = token_data.get("token")
+        # Auth service proxies jwt-auth-service response which uses parent_token
+        token = token_data.get("parent_token") or token_data.get("token")
         if not isinstance(token, str) or not token:
-            raise ClickException("token response missing 'token' field")
+            raise ClickException("token response missing 'parent_token' field")
 
         # 4. Store token in config file
         path = set_config_value("auth_token", token)
