@@ -93,9 +93,16 @@ def web3_provider_for_endpoint(endpoint: str) -> BaseProvider:
                     "WARNING: sending auth token over plain HTTP. "
                     "Consider using HTTPS for production endpoints."
                 )
+            # request_kwargs headers replace (not merge) the defaults in Web3.py 7.x,
+            # so we must include Content-Type alongside Authorization.
             return HTTPProvider(
                 endpoint,
-                request_kwargs={"headers": {"Authorization": f"Bearer {auth_token}"}},
+                request_kwargs={
+                    "headers": {
+                        "Content-Type": "application/json",
+                        "Authorization": f"Bearer {auth_token}",
+                    }
+                },
             )
         return HTTPProvider(endpoint)
 

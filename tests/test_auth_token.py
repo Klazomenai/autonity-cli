@@ -82,6 +82,9 @@ class TestProviderHeaderInjection:
         assert isinstance(provider, HTTPProvider)
         headers = provider._request_kwargs["headers"]  # type: ignore[attr-defined]
         assert headers["Authorization"] == "Bearer my-jwt"
+        # Content-Type must be preserved — Web3.py 7.x replaces defaults when
+        # custom headers are set, so we must include it explicitly.
+        assert headers["Content-Type"] == "application/json"
 
     def test_plain_http_with_token_warns(
         self, capsys: pytest.CaptureFixture[str]
