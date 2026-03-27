@@ -16,6 +16,6 @@ rpc_endpoint = https://rpc1.piccadilly.autonity.org/
 # contract_address = <contract-address>
 # contract_abi = <contract-abi-file>
 
-# TODO:
-# address =
-# chain_id =
+# JWT authentication (see docs/auth.md for details)
+# auth_service = https://your-keyra-instance.example.com
+# auth_token is managed by `aut auth login` — do not set manually
