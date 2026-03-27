@@ -50,8 +50,11 @@ logged in as 0xYourAddress
 token stored in /path/to/.autrc
 ```
 
-The token is stored as `auth_token` in your `.autrc` config file and
-automatically used for all subsequent RPC requests.
+The token is stored as `auth_token` in the first config file found by
+walking from the current directory to parent directories (`.autrc`), or
+`~/.config/aut/autrc` when the home directory is reached. If no config
+file exists, a new `.autrc` is created in the current directory with
+restrictive permissions (0600).
 
 ### Auth Service Resolution
 
@@ -174,9 +177,10 @@ export AUT_AUTH_SERVICE=https://your-keyra-instance.example.com
 # Add: auth_service = https://your-keyra-instance.example.com
 ```
 
-### "cannot reach auth service"
+### "cannot reach auth service at \<service\_url\>"
 
-The auth service URL is unreachable. Check:
+You may also see `auth service timed out at <service_url>`. In both
+cases, the auth service URL is unreachable. Check:
 - Network connectivity to the auth service
 - The URL is the root domain, not the `/rpc` path
 - HTTPS certificate is valid
@@ -192,13 +196,22 @@ The auth service returned a response without the expected token field. This
 typically indicates a version mismatch between the CLI and the auth service.
 Update to the latest version of `aut`.
 
-### "authentication failed: 415 Unsupported Media Type"
+### "challenge failed: 415" or "authentication failed: 415"
 
-You may also see `challenge failed: 415 ...` with a similar message.
+A 415 from the auth service (`/auth/challenge` or `/auth/token`) generally
+indicates a version mismatch between the CLI and the auth service. The
+`aut auth login` command sends JSON with `Content-Type: application/json`,
+so if you see a 415 here, check that the auth service version matches the
+CLI you are using.
 
-Ensure you are running the latest version of `aut`. Older versions may not
-include `Content-Type: application/json` in authenticated requests due to a
-Web3.py 7.x compatibility issue.
+### 415 from RPC endpoints after login
+
+If you see a 415 from Autonity RPC endpoints *after* a successful login
+(on JWT-authenticated requests), ensure you are running the latest version
+of `aut`. Older versions may not include `Content-Type: application/json`
+in Web3.py-based RPC requests due to a Web3.py 7.x compatibility issue
+where custom `request_kwargs` headers replace the defaults rather than
+merging with them.
 
 ## Further Reading
 
