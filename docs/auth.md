@@ -113,8 +113,8 @@ header on all HTTP RPC requests:
 # Token is injected automatically
 aut block get latest --rpc-endpoint https://your-rpc-endpoint.example.com/rpc
 
-# Or set the RPC endpoint in config for convenience
-echo "rpc_endpoint = https://your-rpc-endpoint.example.com/rpc" >> .autrc
+# Or set the endpoint in your .autrc (must have [aut] section — see .autrc.sample)
+# echo "rpc_endpoint = https://your-rpc-endpoint.example.com/rpc" >> .autrc
 aut block get latest
 ```
 
@@ -123,7 +123,7 @@ aut block get latest
 | Protocol | Token Injection | Notes |
 |----------|----------------|-------|
 | HTTP/HTTPS | `Authorization: Bearer <token>` | Full support |
-| WebSocket | Not supported | Warning printed if token is configured |
+| WebSocket | Not supported | Warning printed with `--verbose` if token is configured |
 | IPC | Not supported | Local communication, no auth needed |
 
 ## Configuration Reference
@@ -170,8 +170,8 @@ aut auth login --auth-service https://your-keyra-instance.example.com
 # Environment variable
 export AUT_AUTH_SERVICE=https://your-keyra-instance.example.com
 
-# Config file
-echo "auth_service = https://your-keyra-instance.example.com" >> .autrc
+# Config file (.autrc must have [aut] section — see .autrc.sample)
+# Add: auth_service = https://your-keyra-instance.example.com
 ```
 
 ### "cannot reach auth service"
@@ -192,7 +192,9 @@ The auth service returned a response without the expected token field. This
 typically indicates a version mismatch between the CLI and the auth service.
 Update to the latest version of `aut`.
 
-### "415 Unsupported Media Type"
+### "authentication failed: 415 Unsupported Media Type"
+
+You may also see `challenge failed: 415 ...` with a similar message.
 
 Ensure you are running the latest version of `aut`. Older versions may not
 include `Content-Type: application/json` in authenticated requests due to a
