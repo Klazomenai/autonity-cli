@@ -20,6 +20,24 @@ Template:
 ### Fixed
 -->
 
+## [Unreleased]
+
+### Changed
+
+- Test framework migrated from unittest to pytest
+
+### Added
+
+- JWT-authenticated RPC access via Sign-In with Ethereum (SIWE)
+- `aut auth login`, `aut auth status`, `aut auth logout` commands
+- `auth_token` and `auth_service` configuration fields
+- JWT authentication guide in `docs/auth.md`
+
+### Fixed
+
+- Authenticated RPC requests fail with 415 on Web3.py 7.x due to missing `Content-Type` header
+- Login fails when auth service returns `parent_token` field
+
 ## [v2.0.2] - 2025-08-12
 
 ### Changed
@@ -126,6 +144,7 @@ Template:
 - Fix startup crash due to `ModuleNotFoundError` from eth_rlp ([#137](https://github.com/autonity/autonity-cli/issues/137))
 
 <!-- [vX.Y.Z]: https://github.com/autonity/autonity.py/releases/tag/vX.Y.Z -->
+[Unreleased]: https://github.com/autonity/autonity-cli/compare/v2.0.2...HEAD
 [v2.0.2]: https://github.com/autonity/autonity-cli/releases/tag/v2.0.2
 [v2.0.1]: https://github.com/autonity/autonity-cli/releases/tag/v2.0.1
 [v2.0.0]: https://github.com/autonity/autonity-cli/releases/tag/v2.0.0
