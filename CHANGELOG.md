@@ -20,6 +20,24 @@ Template:
 ### Fixed
 -->
 
+## [Unreleased]
+
+### Added
+
+- JWT-authenticated RPC access via Sign-In with Ethereum (SIWE) ([#11](https://github.com/Klazomenai/autonity-cli/pull/11), [#13](https://github.com/Klazomenai/autonity-cli/pull/13))
+- `aut auth login`, `aut auth status`, `aut auth logout` commands ([#12](https://github.com/Klazomenai/autonity-cli/pull/12))
+- `auth_token` and `auth_service` configuration fields ([#11](https://github.com/Klazomenai/autonity-cli/pull/11))
+- JWT authentication guide in `docs/auth.md` ([#20](https://github.com/Klazomenai/autonity-cli/pull/20))
+
+### Fixed
+
+- Authenticated RPC requests fail with 415 on Web3.py 7.x due to missing `Content-Type` header ([#18](https://github.com/Klazomenai/autonity-cli/pull/18))
+- Login fails when auth service returns `parent_token` field ([#16](https://github.com/Klazomenai/autonity-cli/pull/16))
+
+### Changed
+
+- Test framework migrated from unittest to pytest ([#10](https://github.com/Klazomenai/autonity-cli/pull/10))
+
 ## [v2.0.2] - 2025-08-12
 
 ### Changed

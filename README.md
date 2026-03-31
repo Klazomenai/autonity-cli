@@ -103,6 +103,27 @@ password to decrypt the key. But if the environment variable `KEYFILEPWD` has
 been set, then Autonity CLI will skip the password prompt and attempt to use the
 value of this variable as the keyfile password instead.
 
+### JWT-authenticated RPC
+
+For RPC endpoints protected by JWT access control (e.g. via
+[KeyRA](https://github.com/Klazomenai/KeyRA)), `aut` supports Sign-In with
+Ethereum ([SIWE](https://eips.ethereum.org/EIPS/eip-4361)) authentication:
+
+```console
+$ aut auth login \
+    --keyfile ~/.autonity/keystore/mykey.json \
+    --auth-service https://your-keyra-instance.example.com
+logged in as 0xYourAddress
+token stored in /path/to/.autrc
+```
+
+Once authenticated, the JWT is automatically included as a `Bearer` token on
+all HTTP RPC requests. Use `aut auth status` to inspect the token and
+`aut auth logout` to remove it.
+
+See [docs/auth.md](docs/auth.md) for the full guide including configuration
+reference, protocol-specific behaviour, and troubleshooting.
+
 ## (Optional) Enable command completion (bash and zsh)
 
 Completion is available in `bash` and `zsh` shells as follows. (Adapt these
