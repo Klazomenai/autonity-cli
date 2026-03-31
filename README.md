@@ -75,6 +75,10 @@ and transactions:
 - Trezor device
 - local keyfile
 
+It also supports JWT-authenticated RPC access via Sign-In with Ethereum (SIWE)
+for endpoints that require token-based access control. See the
+[JWT-authenticated RPC](#jwt-authenticated-rpc) section below.
+
 ### Trezor authentication
 
 Before using a Trezor device with Autonity CLI, ensure it is running the latest
